@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+
+
+    <!-- <link rel="stylesheet" href="style.css"> -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/element-plus/dist/index.css" />
+    <!-- Import Vue 3 -->
+    <script src="//cdn.jsdelivr.net/npm/vue@3"></script>
+    <!-- Import component library -->
+    <script src="//cdn.jsdelivr.net/npm/element-plus"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue"></script>
+    <!-- Import socket.io -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+
+
+</head>
+
+<body>
+
+
+    <div id="commands">
+
+        <div class="common-layout">
+            <el-container>
+              <el-header>{{ resMsg }}</el-header>
+              <el-main>
+                <el-row class="mb-4">
+
+                    <el-col :span="8">
+                        <el-button type="primary" @click="start_attack('1')">{{ attach1 }}</el-button>
+                    </el-col>
+
+                    <el-col :span="8">
+                        <el-button type="primary" @click="start_attack('2')">{{ attach2 }}</el-button>
+                    </el-col>
+
+                    <el-col :span="8">
+                        <el-button type="primary" @click="start_attack('3')">{{ attach3 }}</el-button>
+                    </el-col>
+                </el-row>
+              </el-main>
+            </el-container>
+          </div>
+
+
+    </div>
+
+
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    socket: null,
+                    attach1: '攻击方式1',
+                    attach2: '攻击方式2',
+                    attach3: '攻击方式3',
+                    resMsg: '',
+                }
+            },
+            created() {
+                this.socket = io();
+            },
+            mounted() {
+                this.socket.on('fightback', (msg) => {
+                    this.resMsg = msg;
+                });
+            },
+            methods: {
+                start_attack: function (msg) {
+                    this.socket.emit('fight', msg);
+                }
+            }
+        });
+        for ([name, comp] of Object.entries(ElementPlusIconsVue)) {
+            app.component(name, comp);
+        }
+        app.use(ElementPlus);
+        app.mount('#commands');
+
+    </script>
+
+
+</body>
+
+</html>
