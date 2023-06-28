@@ -1,0 +1,163 @@
+body {
+    padding: 0;
+    margin: 0 auto;
+    overflow: hidden;
+    background-color: #262626;
+}
+
+#mResolution {
+    position: absolute;
+
+    top: 10px;
+    left: 10px;
+    width: 100px;
+    height: 20px;
+    z-index: 1000;
+}
+
+#mResolution div {
+    background-color: grey;
+    border: 2px solid red;
+    text-align: left;
+    font-size: 16px;
+    color: white;
+}
+
+#app {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0 auto;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+#global_state {
+    position: absolute;
+    bottom: 50px;
+    right: 120px;
+    width: 280px;
+    z-index: 1000;
+}
+
+#global_state div {
+    background-color: grey;
+    border: 2px solid red;
+    text-align: center;
+    font-size: 36px;
+    color: white;
+    height: 100px;
+
+
+}
+
+#videoDiv {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0 auto;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aVideo {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0 auto;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.videoStream {
+    width: auto;
+    height: 100%;
+}
+
+#hotspotsDiv {
+    position: absolute;
+    height: 100%;
+    padding: 0;
+    margin: 0 auto;
+    top: 0;
+    z-index: 30;
+}
+
+.hotspot1 {
+    position: absolute;
+    left: 7%;
+    top: 39.75%;
+    width: 21%;
+    height: 9.25%;
+    cursor: pointer;
+}
+
+.hotspot2 {
+    position: absolute;
+    left: 7%;
+    top: 53.75%;
+    width: 22%;
+    height: 10.25%;
+    cursor: pointer;
+
+}
+
+.hotspot3 {
+    position: absolute;
+    left: 7%;
+    top: 68.75%;
+    width: 21%;
+    height: 10.25%;
+    cursor: pointer;
+
+}
+
+.returnTextBtn{
+    position: absolute;
+    left: 90.9%;
+    top: 89.9%;
+    width: 6%;
+    height: 0.6%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    font-size: 30px;
+  }
+
+  .returnTextBtn img{
+    width: 60%;
+  }
+
+  .resetBtn{
+    position: absolute;
+    left: 90.9%;
+    top: 89.9%;
+    width: 6%;
+    height: 0.6%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    font-size: 30px;
+
+  }
+
+  .resetBtn img{
+    width: 60%;
+  }
+
