@@ -4,15 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>右边屏幕</title>
 
-   
+
     <!-- <link rel="stylesheet" href="style.css"> -->
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/element-plus/dist/index.css" />
     <!-- Import Vue 3 -->
     <script src="//cdn.jsdelivr.net/npm/vue@3"></script>
     <!-- Import socket.io -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/main.css">
+
 
 
 </head>
@@ -20,15 +22,47 @@
 <body>
 
 
-    <div id="commands">
+    <div id="app">
+        <div id="mResolution" @click="showRes()">
+            <div v-show="displayRes">{{mWidth}} * {{mHeight}}</div>
+        </div>
+        <div id="global_state">
+            <div v-show="display_global_state">{{not_ready_text}}</div>
+        </div>
+        <div id="videoDiv">
+            <template v-for="n in totalVideos">
+                <transition name="pngTrans">
+                    <div class="aVideo" v-show="displayVideos[n]"><video class="videoStream"
+                            :src="`/right/${n}.mp4`" loop autoplay muted></video>
+                    </div>
+                </transition>
+            </template>
+        </div>
 
     </div>
+
+
 
     <script>
         const app = Vue.createApp({
             data() {
                 return {
                     socket: null,
+                    displayRes: false,
+                    mWidth: 0,
+                    mHeight: 0,
+                    display_global_state: false,
+                    not_ready_text: '有屏幕还未连接或者已断开',
+                    totalVideos: 6,
+                    displayVideos: {
+                        1: true,
+                        2: false,
+                        3: false,
+                        4: false,
+                        5: false,
+                        6: false,
+                    },
+                    currentVideo: null,
                 }
             },
             created() {
@@ -36,12 +70,66 @@
             },
             mounted() {
                 this.socket.emit('server', 'right_ready');
+                this.socket.on('global_state', (msg) => {
+                    console.log(msg);
+                    if (msg == 'all_ready') {
+                        this.display_global_state = false;
+                    } else if (msg == 'not_all_ready') {
+                        this.display_global_state = true;
+                    }
+                });
+                this.socket.on('right_ready_acknowledge', (msg) => {
+                    console.log(msg);
+                    if (msg == 'reject_repeat') {
+                        alert('右侧屏幕已经连接，请勿重复连接');
+                        window.location.href = '/';
+
+                    }
+                });
+                this.socket.on('video_to_play', (video_to_play) => {
+                    console.log(video_to_play);
+                    this.currentVideo = video_to_play["right"];
+                });
+                this.mWidth = document.body.clientWidth;
+                this.mHeight = document.documentElement.clientHeight;
+                const that = this;
+                window.onresize = () => {
+                    return (() => {
+                        that.mWidth = document.body.clientWidth;
+                        that.mHeight = document.documentElement.clientHeight;
+                    })()
+                }
+            },
+            watch: {
+                currentVideo: function (newVal, oldVal) {
+                    if (oldVal != null) {
+                        this.displayVideos[oldVal] = false;
+                        this.stopVideo(oldVal);
+                    }
+                    if (newVal != null) {
+                        this.displayVideos[newVal] = true;
+                        this.playVideo(newVal);
+                    }
+                }
             },
             methods: {
-
+                showRes() {
+                    this.displayRes = !this.displayRes;
+                    console.log(this.displayRes);
+                },
+                playVideo(videoNum) {
+                    console.log(videoNum);
+                    const video = document.getElementsByClassName("videoStream")[videoNum - 1];
+                    video.play();
+                },
+                stopVideo(videoNum) {
+                    const video = document.getElementsByClassName("videoStream")[videoNum - 1];
+                    video.pause();
+                    video.currentTime = 0;
+                },
             }
         });
-        app.mount('#commands');
+        app.mount('#app');
 
     </script>
 

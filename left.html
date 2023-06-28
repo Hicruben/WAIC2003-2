@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>左边屏幕</title>
 
 
     <!-- <link rel="stylesheet" href="style.css"> -->
@@ -13,6 +13,7 @@
     <script src="//cdn.jsdelivr.net/npm/vue@3"></script>
     <!-- Import socket.io -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/main.css">
 
 
 
@@ -21,10 +22,40 @@
 <body>
 
 
-    <div id="commands">
+    <div id="app">
+        <div id="mResolution" @click="showRes()">
+            <div v-show="displayRes">{{mWidth}} * {{mHeight}}</div>
+        </div>
+        <div id="global_state">
+            <div v-show="display_global_state">{{not_ready_text}}</div>
+        </div>
+        <div id="videoDiv">
+            <template v-for="n in totalVideos">
+                <transition name="pngTrans">
+                    <div class="aVideo" v-show="displayVideos[n]"><video class="videoStream" :src="`/left/${n}.mp4`"
+                            loop autoplay muted></video>
+                    </div>
+                </transition>
+            </template>
+        </div>
 
+        <div id="hotspotsDiv" v-show="displayHotspotDiv">
+            <template v-for="h in hotspotsNum">
+                <div :class="`hotspot${h}`" v-show="displayHotspot[h]" @click="linkto(h)">
+                </div>
+            </template>
+        </div>
+
+        <div class="returnTextBtn" v-show="displayReturnText" @click="returnToOptions">
+            返回<img src="/return.png">
+        </div>
+
+        <div class="resetBtn" v-show="displayReset" @click="notify_reset">
+            重新体验<img src="/return.png">
+        </div>
 
     </div>
+
 
 
     <script>
@@ -32,7 +63,34 @@
             data() {
                 return {
                     socket: null,
-
+                    displayRes: false,
+                    mWidth: 0,
+                    mHeight: 0,
+                    display_global_state: false,
+                    not_ready_text: '有屏幕还未连接或者已断开',
+                    totalVideos: 6,
+                    displayVideos: {
+                        1: true,
+                        2: false,
+                        3: false,
+                        4: false,
+                        5: false,
+                        6: false,
+                    },
+                    currentVideo: null,
+                    displayHotspotDiv: false,
+                    hotspotsNum: 3,
+                    displayHotspot: {
+                        1: false,
+                        2: false,
+                        3: false,
+                    },
+                    hotspots: {
+                        2: [1, 2, 3],
+                    },
+                    whereToReturn: [3,4,5],
+                    displayReturnText: false,
+                    displayReset: false,
                 }
             },
             created() {
@@ -40,12 +98,152 @@
             },
             mounted() {
                 this.socket.emit('server', 'left_ready');
+                this.socket.on('global_state', (msg) => {
+                    console.log(msg);
+                    if (msg == 'all_ready') {
+                        this.display_global_state = false;
+                    } else if (msg == 'not_all_ready') {
+                        this.display_global_state = true;
+                    }
+                });
+                this.socket.on('left_ready_acknowledge', (msg) => {
+                    console.log(msg);
+                    if (msg == 'reject_repeat') {
+                        alert('左侧屏幕已经连接，请勿重复连接');
+                        window.location.href = '/';
+
+                    }
+                });
+                this.socket.on('video_to_play', (video_to_play) => {
+                    console.log(video_to_play);
+                    this.currentVideo = video_to_play["left"];
+                });
+                this.mWidth = document.body.clientWidth;
+                this.mHeight = document.documentElement.clientHeight;
+                // set the width of hotspotsDiv
+                document.getElementById("hotspotsDiv").style.width = (this.mHeight / 1440) * 2560 + "px";
+
+                const that = this;
+                window.onresize = () => {
+                    return (() => {
+                        that.mWidth = document.body.clientWidth;
+                        that.mHeight = document.documentElement.clientHeight;
+                        document.getElementById("hotspotsDiv").style.width = (this.mHeight / 1440) * 2560 + "px";
+                    })()
+                }
+                let default_video = document.getElementsByClassName("videoStream")[0];
+                // when the current video is 1, any user operation on the screen will quit video 1
+                default_video.addEventListener('click', this.quit_default_video);
+                default_video.addEventListener('touchstart', this.quit_default_video);
+                default_video.addEventListener('touchmove', this.quit_default_video);
+                default_video.addEventListener('touchend', this.quit_default_video);
+            },
+            watch: {
+                currentVideo: function (newVal, oldVal) {
+                    if (oldVal != null) {
+                        this.displayVideos[oldVal] = false;
+                        this.stopVideo(oldVal);
+                    }
+                    if (newVal != null) {
+                        this.displayVideos[newVal] = true;
+                        this.playVideo(newVal);
+                        if(this.hotspots[newVal] != undefined){
+                            this.displayHotspotDiv = true;
+                            for (let i = 0; i < this.hotspots[newVal].length; i++) {
+                                this.displayHotspot[this.hotspots[newVal][i]] = true;
+                            }
+                        }else{
+                            for (let i = 0; i < this.hotspotsNum; i++) {
+                                this.displayHotspot[i+1] = false;
+                            }
+                        }
+                        if(this.whereToReturn.includes(newVal)){
+                            console.log("displayReturnText");
+                            this.displayReturnText = true;
+                        }else{
+                            console.log("not displayReturnText");
+                            this.displayReturnText = false;
+                        }
+                    }
+                    if(newVal == 6){
+                        this.displayReset = true;
+                    }else{
+                        this.displayReset = false;
+                    }
+                }
             },
             methods: {
-
+                showRes() {
+                    this.displayRes = !this.displayRes;
+                    console.log(this.displayRes);
+                },
+                playVideo(videoNum) {
+                    console.log(videoNum);
+                    const video = document.getElementsByClassName("videoStream")[videoNum - 1];
+                    video.play();
+                },
+                stopVideo(videoNum) {
+                    const video = document.getElementsByClassName("videoStream")[videoNum - 1];
+                    video.pause();
+                    video.currentTime = 0;
+                },
+                quit_default_video() {
+                    if (this.display_global_state == true) {
+                        return;
+                    }
+                    let video_2_play = {
+                        "left": 2,
+                        "middle": 2,
+                        "right": 2
+                    };
+                    this.notify_server_play_video(video_2_play);
+                },
+                notify_server_play_video(video_2_play) {
+                    this.socket.emit('notify_server_play_video', video_2_play);
+                },
+                linkto(h) {
+                    this.displayHotspotDiv = false;
+                    for (let i = 0; i < this.hotspotsNum; i++) {
+                        this.displayHotspot[i+1] = false;
+                    }
+                    let video_2_play = null;
+                    
+                    if(h == 1){
+                        video_2_play = {
+                            "left": 3,
+                            "middle": 3,
+                            "right": 3
+                        };
+                    }else if(h == 2){
+                        video_2_play = {
+                            "left": 4,
+                            "middle": 4,
+                            "right": 4
+                        };
+                    }else if(h == 3){
+                        video_2_play = {
+                            "left": 5,
+                            "middle": 5,
+                            "right": 5
+                        };
+                    }
+                    this.notify_server_play_video(video_2_play);
+                },
+                returnToOptions(){
+                    this.displayReturnText = false;
+                    let video_2_play = {
+                        "left": 2,
+                        "middle": 2,
+                        "right": 2
+                    };
+                    this.notify_server_play_video(video_2_play);
+                },
+                notify_reset(){
+                    this.socket.emit('notify_reset', 'reset');
+                }
             }
         });
-        app.mount('#commands');
+        app.mount('#app');
 
     </script>
 
