@@ -7,12 +7,11 @@
     <title>中间屏幕</title>
 
 
-    <!-- <link rel="stylesheet" href="style.css"> -->
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/element-plus/dist/index.css" />
     <!-- Import Vue 3 -->
-    <script src="//cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="/vue.js"></script>
+
     <!-- Import socket.io -->
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="/socket.io.js"></script>
     <link rel="stylesheet" type="text/css" href="/main.css">
 
 
@@ -31,11 +30,11 @@
         </div>
         <div id="videoDiv">
             <template v-for="n in totalVideos">
-                <transition name="pngTrans">
+                <!-- <transition name="pngTrans"> -->
                     <div class="aVideo" v-show="displayVideos[n]"><video class="videoStream" :src="`/middle/${n}.mp4`"
                             :loop="video_loop[n]" autoplay muted></video>
                     </div>
-                </transition>
+                <!-- </transition> -->
             </template>
         </div>
 
@@ -61,6 +60,9 @@
                         4: false,
                         5: false,
                         6: false,
+                        7: false,
+                        8: false,
+                        9: false,
                     },
                     video_loop: {
                         1: true,
@@ -69,6 +71,9 @@
                         4: false,
                         5: false,
                         6: false,
+                        7: true,
+                        8: true,
+                        9: true,
                     },
                     currentVideo: null,
                 }

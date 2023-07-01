@@ -101,7 +101,13 @@ io.on('connection', (socket) => {
     // obtained_knowleadge[msg] = true;
     // if (obtained_knowleadge[1] && obtained_knowleadge[2] && obtained_knowleadge[3]) {
     video_to_play["left"] = 6;
-    video_to_play["middle"] = 6;
+    if(msg == 1){
+      video_to_play["middle"] = 6;
+    }else if(msg == 2){
+      video_to_play["right"] = 7;
+    }else if(msg == 3){
+      video_to_play["middle"] = 8;
+    }
     video_to_play["right"] = 6;
     io.emit('video_to_play', video_to_play);
     // }
@@ -126,8 +132,8 @@ io.on('connection', (socket) => {
 });
 
 
-server.listen(3000, () => {
-  console.log('listening on *:3000');
+server.listen(3200, () => {
+  console.log('listening on *:3200');
 });
 
 function if_all_ready() {

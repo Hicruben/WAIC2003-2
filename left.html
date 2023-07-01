@@ -7,12 +7,11 @@
     <title>左边屏幕</title>
 
 
-    <!-- <link rel="stylesheet" href="style.css"> -->
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/element-plus/dist/index.css" />
     <!-- Import Vue 3 -->
-    <script src="//cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="/vue.js"></script>
+
     <!-- Import socket.io -->
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="/socket.io.js"></script>
     <link rel="stylesheet" type="text/css" href="/main.css">
 
 
@@ -32,9 +31,9 @@
         <div id="videoDiv">
             <template v-for="n in totalVideos">
                 <!-- <transition name="pngTrans"> -->
-                    <div class="aVideo" v-show="displayVideos[n]"><video class="videoStream" :src="`/left/${n}.mp4`"
-                            :loop="isLoop[n]" autoplay muted></video>
-                    </div>
+                <div class="aVideo" v-show="displayVideos[n]"><video class="videoStream" :src="`/left/${n}.mp4`"
+                        loop autoplay muted></video>
+                </div>
                 <!-- </transition> -->
             </template>
         </div>
@@ -94,9 +93,9 @@
                     isLoop: {
                         1: true,
                         2: true,
-                        3: false,
-                        4: false,
-                        5: false,
+                        3: true,
+                        4: true,
+                        5: true,
                         6: true,
                     }
                 }
@@ -147,7 +146,7 @@
                 default_video.addEventListener('touchend', this.quit_default_video);
 
                 let timer;
-                const timeoutDuration = 100000; // 30s无人操作后自动播放
+                const timeoutDuration = 120000; // 120s无人操作后自动播放
 
                 const resetTimer = () => {
                     clearTimeout(timer);
@@ -167,20 +166,20 @@
                         this.stopVideo(oldVal);
                     }
                     if (newVal != null) {
-                        
-                        if (newVal == 3 || newVal == 4 || newVal == 5) {
-                            console.log("newVal == 3 || newVal == 4 || newVal == 5");
-                            the_video = document.getElementsByClassName("videoStream")[newVal-1];
-                            // change the video source
-                            the_video.src = "/left/"+ newVal + ".mp4";
 
-                            // when the video ends, play the video with the same name but with -1
-                            the_video.addEventListener('ended', () => {
-                                console.log("the_video ended");
-                                the_video.src = "/left/"+ newVal + "-1.mp4";
-                                the_video.play();
-                            });
-                        } 
+                        // if (newVal == 3 || newVal == 4 || newVal == 5) {
+                        //     console.log("newVal == 3 || newVal == 4 || newVal == 5");
+                        //     the_video = document.getElementsByClassName("videoStream")[newVal - 1];
+                        //     // change the video source
+                        //     the_video.src = "/left/" + newVal + ".mp4";
+
+                        //     // when the video ends, play the video with the same name but with -1
+                        //     the_video.addEventListener('ended', () => {
+                        //         console.log("the_video ended");
+                        //         the_video.src = "/left/" + newVal + "-1.mp4";
+                        //         the_video.play();
+                        //     });
+                        // }
 
                         this.displayVideos[newVal] = true;
                         this.playVideo(newVal);
@@ -201,7 +200,7 @@
                             console.log("not displayReturnText");
                             this.displayReturnText = false;
                         }
-                        
+
                     }
                     if (newVal == 6) {
                         this.displayReset = true;
@@ -277,7 +276,9 @@
                     this.notify_server_play_video(video_2_play);
                 },
                 notify_reset() {
-                    this.socket.emit('notify_reset', 'reset');
+                    // this.socket.emit('notify_reset', 'reset');
+                    //refresh the page
+                    window.location.reload();
                 }
             }
         });
