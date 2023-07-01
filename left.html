@@ -31,11 +31,11 @@
         </div>
         <div id="videoDiv">
             <template v-for="n in totalVideos">
-                <transition name="pngTrans">
+                <!-- <transition name="pngTrans"> -->
                     <div class="aVideo" v-show="displayVideos[n]"><video class="videoStream" :src="`/left/${n}.mp4`"
-                            loop autoplay muted></video>
+                            :loop="isLoop[n]" autoplay muted></video>
                     </div>
-                </transition>
+                <!-- </transition> -->
             </template>
         </div>
 
@@ -47,11 +47,11 @@
         </div>
 
         <div class="returnTextBtn" v-show="displayReturnText" @click="returnToOptions">
-            返回<img src="/return.png">
+            <img src="/return.png">
         </div>
 
-        <div class="resetBtn" v-show="displayReset" @click="notify_reset">
-            重新体验<img src="/return.png">
+        <div class="resetBtn" v-show="displayReset" @click="returnToOptions">
+            <img src="/return.png">
         </div>
 
     </div>
@@ -88,9 +88,17 @@
                     hotspots: {
                         2: [1, 2, 3],
                     },
-                    whereToReturn: [3,4,5],
+                    whereToReturn: [3, 4, 5],
                     displayReturnText: false,
                     displayReset: false,
+                    isLoop: {
+                        1: true,
+                        2: true,
+                        3: false,
+                        4: false,
+                        5: false,
+                        6: true,
+                    }
                 }
             },
             created() {
@@ -137,6 +145,20 @@
                 default_video.addEventListener('touchstart', this.quit_default_video);
                 default_video.addEventListener('touchmove', this.quit_default_video);
                 default_video.addEventListener('touchend', this.quit_default_video);
+
+                let timer;
+                const timeoutDuration = 100000; // 30s无人操作后自动播放
+
+                const resetTimer = () => {
+                    clearTimeout(timer);
+                    timer = setTimeout(this.notify_reset, timeoutDuration);
+                };
+
+                window.addEventListener('mousemove', resetTimer);
+                window.addEventListener('keydown', resetTimer);
+                window.addEventListener('scroll', resetTimer);
+                window.addEventListener('touchstart', resetTimer);
+
             },
             watch: {
                 currentVideo: function (newVal, oldVal) {
@@ -145,29 +167,45 @@
                         this.stopVideo(oldVal);
                     }
                     if (newVal != null) {
+                        
+                        if (newVal == 3 || newVal == 4 || newVal == 5) {
+                            console.log("newVal == 3 || newVal == 4 || newVal == 5");
+                            the_video = document.getElementsByClassName("videoStream")[newVal-1];
+                            // change the video source
+                            the_video.src = "/left/"+ newVal + ".mp4";
+
+                            // when the video ends, play the video with the same name but with -1
+                            the_video.addEventListener('ended', () => {
+                                console.log("the_video ended");
+                                the_video.src = "/left/"+ newVal + "-1.mp4";
+                                the_video.play();
+                            });
+                        } 
+
                         this.displayVideos[newVal] = true;
                         this.playVideo(newVal);
-                        if(this.hotspots[newVal] != undefined){
+                        if (this.hotspots[newVal] != undefined) {
                             this.displayHotspotDiv = true;
                             for (let i = 0; i < this.hotspots[newVal].length; i++) {
                                 this.displayHotspot[this.hotspots[newVal][i]] = true;
                             }
-                        }else{
+                        } else {
                             for (let i = 0; i < this.hotspotsNum; i++) {
-                                this.displayHotspot[i+1] = false;
+                                this.displayHotspot[i + 1] = false;
                             }
                         }
-                        if(this.whereToReturn.includes(newVal)){
+                        if (this.whereToReturn.includes(newVal)) {
                             console.log("displayReturnText");
                             this.displayReturnText = true;
-                        }else{
+                        } else {
                             console.log("not displayReturnText");
                             this.displayReturnText = false;
                         }
+                        
                     }
-                    if(newVal == 6){
+                    if (newVal == 6) {
                         this.displayReset = true;
-                    }else{
+                    } else {
                         this.displayReset = false;
                     }
                 }
@@ -204,23 +242,23 @@
                 linkto(h) {
                     this.displayHotspotDiv = false;
                     for (let i = 0; i < this.hotspotsNum; i++) {
-                        this.displayHotspot[i+1] = false;
+                        this.displayHotspot[i + 1] = false;
                     }
                     let video_2_play = null;
-                    
-                    if(h == 1){
+
+                    if (h == 1) {
                         video_2_play = {
                             "left": 3,
                             "middle": 3,
                             "right": 3
                         };
-                    }else if(h == 2){
+                    } else if (h == 2) {
                         video_2_play = {
                             "left": 4,
                             "middle": 4,
                             "right": 4
                         };
-                    }else if(h == 3){
+                    } else if (h == 3) {
                         video_2_play = {
                             "left": 5,
                             "middle": 5,
@@ -229,7 +267,7 @@
                     }
                     this.notify_server_play_video(video_2_play);
                 },
-                returnToOptions(){
+                returnToOptions() {
                     this.displayReturnText = false;
                     let video_2_play = {
                         "left": 2,
@@ -238,7 +276,7 @@
                     };
                     this.notify_server_play_video(video_2_play);
                 },
-                notify_reset(){
+                notify_reset() {
                     this.socket.emit('notify_reset', 'reset');
                 }
             }

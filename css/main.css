@@ -97,17 +97,17 @@ body {
 
 .hotspot1 {
     position: absolute;
-    left: 7%;
-    top: 39.75%;
-    width: 21%;
+    left: 39%;
+    top: 25.75%;
+    width: 22%;
     height: 9.25%;
     cursor: pointer;
 }
 
 .hotspot2 {
     position: absolute;
-    left: 7%;
-    top: 53.75%;
+    left: 39%;
+    top: 47.75%;
     width: 22%;
     height: 10.25%;
     cursor: pointer;
@@ -116,15 +116,15 @@ body {
 
 .hotspot3 {
     position: absolute;
-    left: 7%;
+    left: 39%;
     top: 68.75%;
-    width: 21%;
+    width: 22%;
     height: 10.25%;
     cursor: pointer;
 
 }
 
-.returnTextBtn{
+.returnTextBtn {
     position: absolute;
     left: 90.9%;
     top: 89.9%;
@@ -136,13 +136,13 @@ body {
     justify-content: center;
     z-index: 100;
     font-size: 30px;
-  }
+}
 
-  .returnTextBtn img{
+.returnTextBtn img {
     width: 60%;
-  }
+}
 
-  .resetBtn{
+.resetBtn {
     position: absolute;
     left: 90.9%;
     top: 89.9%;
@@ -155,9 +155,8 @@ body {
     z-index: 100;
     font-size: 30px;
 
-  }
+}
 
-  .resetBtn img{
+.resetBtn img {
     width: 60%;
-  }
-
+}

@@ -21,11 +21,11 @@ let video_to_play = {
   "middle": null,
   "right": null
 }
-let obtained_knowleadge = {
-  1: false,
-  2: false,
-  3: false,
-}
+// let obtained_knowleadge = {
+//   1: false,
+//   2: false,
+//   3: false,
+// }
 app.get('/', (req, res) => {
   res.send('<h1>错误操作</h1>');
 });
@@ -98,14 +98,13 @@ io.on('connection', (socket) => {
   socket.on('notify_server_obtained_knowleadge', (msg) => {
     console.log("收到通知获得知识的请求");
     console.log(msg);
-    obtained_knowleadge[msg] = true;
-    if (obtained_knowleadge[1] && obtained_knowleadge[2] && obtained_knowleadge[3]) {
-      console.log("所有知识都获得了");
-      video_to_play["left"] = 6;
-      video_to_play["middle"] = 6;
-      video_to_play["right"] = 6;
-      io.emit('video_to_play', video_to_play);
-    }
+    // obtained_knowleadge[msg] = true;
+    // if (obtained_knowleadge[1] && obtained_knowleadge[2] && obtained_knowleadge[3]) {
+    video_to_play["left"] = 6;
+    video_to_play["middle"] = 6;
+    video_to_play["right"] = 6;
+    io.emit('video_to_play', video_to_play);
+    // }
   }
   );
 
