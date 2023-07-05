@@ -36,6 +36,7 @@ opts.port = process.argv[2] || "";
 const board = new five.Board(opts);
 let strip = null;
 let ledStyle = 1;
+led_move = false;
 
 app.get('/', (req, res) => {
   res.send('<h1>错误操作</h1>');
@@ -70,6 +71,7 @@ function send_ready_state() {
   if (if_all_ready()) {
     io.emit('global_state', "all_ready");
     console.log("所有屏幕都准备好了");
+    led_all_white_ready();
     video_to_play["left"] = 1;
     video_to_play["middle"] = 1;
     video_to_play["right"] = 1;
@@ -103,7 +105,32 @@ function led_one_move_forward() {
   }, 1000 / 5);
 }
 
-function led_5_move_on_white() {
+function led_12_move_on_white() {
+  const numLeds = strip.length;
+  const ballColors = ["#000080", "#000080", "#000080", "#000080", "#000080", "#000080", "#000080", "#000080"]; // 深海蓝
+  // const ballColors = ["#40E0D0", "#40E0D0", "#40E0D0", "#40E0D0", "#40E0D0", "#40E0D0", "#40E0D0", "#40E0D0"]; // 珊瑚蓝
+
+  const ballSize = 16; // Number of LEDs for each ball
+  let currentPosition = 0;
+
+  setInterval(function () {
+    strip.color("#FFFFFF"); // Set all LEDs to off
+
+    // Set the current position LEDs to the respective colors
+    for (let i = 0; i < ballSize; i++) {
+      const ledIndex = (currentPosition + i) % numLeds;
+      const ballIndex = Math.floor(i / ballSize * ballColors.length);
+      strip.pixel(ledIndex).color(ballColors[ballIndex]);
+    }
+
+    strip.show();
+
+    // Move the position forward
+    currentPosition = (currentPosition + 1) % numLeds;
+  }, 50); // Adjust the interval as per your preference
+}
+
+function led_12_move_on_white_backwards() {
   const numLeds = strip.length;
   const ballColors = ["#000080", "#000080", "#000080", "#000080", "#000080", "#000080", "#000080", "#000080"]; // 深海蓝
   // const ballColors = ["#40E0D0", "#40E0D0", "#40E0D0", "#40E0D0", "#40E0D0", "#40E0D0", "#40E0D0", "#40E0D0"]; // 珊瑚蓝
@@ -123,9 +150,16 @@ function led_5_move_on_white() {
 
     strip.show();
 
-    // Move the position forward
-    currentPosition = (currentPosition + 1) % numLeds;
+    // Move the position backward
+    currentPosition = (currentPosition - 1) % numLeds;
   }, 100); // Adjust the interval as per your preference
+
+
+}
+
+function led_all_white_ready() {
+  strip.color("#FFFFFF");
+  strip.show();
 }
 
 
@@ -135,7 +169,7 @@ board.on("ready", function () {
 
   strip = new pixel.Strip({
     data: 6,
-    length: 60, // 这个数量应该和你的LED灯数量一样
+    length: 144, // 这个数量应该和你的LED灯数量一样
     board: this,
     controller: "FIRMATA",
   });
@@ -148,8 +182,7 @@ board.on("ready", function () {
             left_ready = true;
             left_id = socket.id;
             console.log("左侧屏幕准备好了");
-            // to call the led function
-            led_5_move_on_white();
+
           } else {
             socket.emit('left_ready_acknowledge', "reject_repeat");
           }
@@ -194,6 +227,14 @@ board.on("ready", function () {
         console.log("收到通知播放视频的请求");
         console.log(msg);
         io.emit('video_to_play', msg);
+        if (msg["left"] == 3 || msg["left"] == 4 || msg["left"] == 5) {
+          if(!led_move){
+            led_12_move_on_white();
+            led_move=!led_move;
+          }
+        } else {
+          // led_all_white_ready();
+        }
       });
 
       socket.on('notify_server_obtained_knowleadge', (msg) => {
@@ -201,15 +242,18 @@ board.on("ready", function () {
         console.log(msg);
         // obtained_knowleadge[msg] = true;
         // if (obtained_knowleadge[1] && obtained_knowleadge[2] && obtained_knowleadge[3]) {
-        video_to_play["left"] = 6;
         if (msg == 1) {
+          video_to_play["left"] = 3;
           video_to_play["middle"] = 6;
         } else if (msg == 2) {
+          video_to_play["left"] = 4;
           video_to_play["right"] = 7;
         } else if (msg == 3) {
+          video_to_play["left"] = 5;
           video_to_play["middle"] = 8;
         }
         video_to_play["right"] = 6;
+        io.emit('showbtn', 'complete');
         io.emit('video_to_play', video_to_play);
         // }
       }
@@ -226,6 +270,19 @@ board.on("ready", function () {
         video_to_play["left"] = 1;
         video_to_play["middle"] = 1;
         video_to_play["right"] = 1;
+        io.emit('video_to_play', video_to_play);
+        if(led_move){
+          led_all_white_ready();
+          led_move=!led_move;
+        }
+      }
+      );
+
+      socket.on('notify_show_complete', (msg) => {
+        console.log("要求查看完整报告");
+        video_to_play["left"] = msg;
+        video_to_play["middle"] = 9;
+        video_to_play["right"] = 6;
         io.emit('video_to_play', video_to_play);
       }
       );

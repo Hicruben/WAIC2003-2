@@ -31,8 +31,8 @@
         <div id="videoDiv">
             <template v-for="n in totalVideos">
                 <!-- <transition name="pngTrans"> -->
-                <div class="aVideo" v-show="displayVideos[n]"><video class="videoStream" :src="`/left/${n}.mp4`"
-                        loop autoplay muted></video>
+                <div class="aVideo" v-show="displayVideos[n]"><video class="videoStream" :src="`/left/${n}.mp4`" loop
+                        autoplay muted></video>
                 </div>
                 <!-- </transition> -->
             </template>
@@ -45,12 +45,24 @@
             </template>
         </div>
 
-        <div class="returnTextBtn" v-show="displayReturnText" @click="returnToOptions">
-            <img src="/return.png">
-        </div>
+        <div id="bottomBtnDiv" v-show="displayBottmBtnDiv">
+            <div class="returnTextBtn" v-show="displayReturnText" @click="skipToComplete">
+                <img src="/skip.png">
+            </div>
 
-        <div class="resetBtn" v-show="displayReset" @click="returnToOptions">
-            <img src="/return.png">
+            <div class="resetBtn" v-show="displayBackBtn" @click="returnToOptions">
+                <img src="/return.png">
+            </div>
+
+            <div class="returnToHomeBtn" v-show="displayReturnHome" @click="notify_reset">
+                <img src="/home.png">
+            </div>
+
+        </div>
+        <div id="CompleteBtnDiv" v-show="displayCompleteBtn" @click="showComplete">
+            <div class="completeBtn">
+                <img src="/completeBtn.png">
+            </div>
         </div>
 
     </div>
@@ -88,8 +100,8 @@
                         2: [1, 2, 3],
                     },
                     whereToReturn: [3, 4, 5],
-                    displayReturnText: false,
-                    displayReset: false,
+                    displayReturnText: true,
+                    displayBackBtn: false,
                     isLoop: {
                         1: true,
                         2: true,
@@ -97,7 +109,10 @@
                         4: true,
                         5: true,
                         6: true,
-                    }
+                    },
+                    displayReturnHome: false,
+                    displayBottmBtnDiv: true,
+                    displayCompleteBtn: false,
                 }
             },
             created() {
@@ -125,10 +140,22 @@
                     console.log(video_to_play);
                     this.currentVideo = video_to_play["left"];
                 });
+                this.socket.on('showbtn', (msg) => {
+                    console.log(msg);
+                    if (msg == 'complete') {
+                        this.displayCompleteBtn = true;
+                        this.displayReturnText = false;
+
+                    }
+                });
                 this.mWidth = document.body.clientWidth;
                 this.mHeight = document.documentElement.clientHeight;
                 // set the width of hotspotsDiv
                 document.getElementById("hotspotsDiv").style.width = (this.mHeight / 1440) * 2560 + "px";
+                // set the width of bottomBtnDiv
+                document.getElementById("bottomBtnDiv").style.width = (this.mHeight / 1440) * 2560 + "px";
+
+
 
                 const that = this;
                 window.onresize = () => {
@@ -136,6 +163,8 @@
                         that.mWidth = document.body.clientWidth;
                         that.mHeight = document.documentElement.clientHeight;
                         document.getElementById("hotspotsDiv").style.width = (this.mHeight / 1440) * 2560 + "px";
+                        document.getElementById("bottomBtnDiv").style.width = (this.mHeight / 1440) * 2560 + "px";
+
                     })()
                 }
                 let default_video = document.getElementsByClassName("videoStream")[0];
@@ -201,13 +230,30 @@
                             this.displayReturnText = false;
                         }
 
+                        if (newVal == 3 || newVal == 4 || newVal == 5 || newVal == 6) {
+                            console.log("displayBackBtn true");
+                            console.log(newVal);
+                            this.displayBackBtn = true;
+                        } else {
+                            console.log("displayBackBtn false");
+                            console.log(newVal);
+                            this.displayBackBtn = false;
+                        }
+
+                        if (newVal ==2 || newVal == 3 || newVal == 4 || newVal == 5 || newVal == 6) {
+                            console.log("displayReturnHome true");
+                            console.log(newVal);
+                            this.displayReturnHome = true;
+                        } else {
+                            console.log("displayReturnHome false");
+                            console.log(newVal);
+                            this.displayReturnHome = false;
+                        }
+
                     }
-                    if (newVal == 6) {
-                        this.displayReset = true;
-                    } else {
-                        this.displayReset = false;
-                    }
-                }
+
+
+                },
             },
             methods: {
                 showRes() {
@@ -274,11 +320,39 @@
                         "right": 2
                     };
                     this.notify_server_play_video(video_2_play);
+                    this.displayCompleteBtn = false;
                 },
                 notify_reset() {
                     // this.socket.emit('notify_reset', 'reset');
                     //refresh the page
                     window.location.reload();
+                },
+                showComplete() {
+                    this.socket.emit('notify_show_complete', this.currentVideo);
+                    this.displayComplete = true;
+                },
+                skipToComplete() {
+                    let video_2_play = {
+                        "left": null,
+                        "middle": null,
+                        "right": null
+                    };
+                    video_2_play["left"] = this.currentVideo;
+                    video_2_play["right"] = this.currentVideo;
+                    if (this.currentVideo == 3) {
+                        video_2_play["middle"] = 6;
+                    } else if (this.currentVideo == 4) {
+                        video_2_play["middle"] = 7;
+                    } else if (this.currentVideo == 5) {
+                        video_2_play["middle"] = 8;
+                    } else {
+                        video_2_play["left"] = 1;
+                        video_2_play["right"] = 1;
+                        video_2_play["middle"] = 1;
+                    }
+                    this.notify_server_play_video(video_2_play);
+                    this.displayCompleteBtn = true;
+                    this.displayReturnText = false;
                 }
             }
         });
