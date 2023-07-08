@@ -247,7 +247,7 @@ board.on("ready", function () {
           video_to_play["middle"] = 6;
         } else if (msg == 2) {
           video_to_play["left"] = 4;
-          video_to_play["right"] = 7;
+          video_to_play["middle"] = 7;
         } else if (msg == 3) {
           video_to_play["left"] = 5;
           video_to_play["middle"] = 8;

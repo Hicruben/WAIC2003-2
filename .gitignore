@@ -16,6 +16,8 @@ coverage
 
 *.zip
 
+*.mp4
+
 /cypress/videos/
 /cypress/screenshots/
 
@@ -28,3 +30,4 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+vids/middle/6.mp4
