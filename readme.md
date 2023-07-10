@@ -13,10 +13,7 @@
      如果没有连接Arduino控制版，使用node server_withoutboard.js启动程序。
      启动程序后，命令行窗口显示“listening on *:3200”，说明程序启动成功。
 
-3/ 
-
-
-
-    
-
-   
+3/ 在左边，中间，右边屏幕上分别打开如下三个页面url
+   左边： http://127.0.0.1:3200/left
+   中间： http://127.0.0.1:3200/middle
+   右边： http://127.0.0.1:3200/right
